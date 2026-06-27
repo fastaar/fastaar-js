@@ -21,7 +21,7 @@ const fastaar = new FastaarClient(process.env.FASTAAR_API_KEY);
 app.post('/pay', async (req, res) => {
     const payment = await fastaar.createPayment({
         amount: 1250,
-        invoice_number: 'ORDER-42',                          // required — your order reference
+        invoice_number: 'ORDER-42',                      // required — your order reference
         success_url: 'https://shop.example.com/thanks',  // optional, customer returns here
         cancel_url: 'https://shop.example.com/cart',     // optional
     });
