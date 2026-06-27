@@ -65,6 +65,7 @@ app.post('/webhooks/fastaar', express.raw({ type: 'application/json' }), (req, r
 await fastaar.getPayment('01jxyz...');
 await fastaar.findByInvoiceNumber('ORDER-42');       // look up by your reference
 await fastaar.listPayments({ status: 'completed' });
+await fastaar.refundPayment('01jxyz...');            // refund a completed payment
 ```
 
 ## Customers

@@ -58,6 +58,16 @@ class FastaarClient {
         return payments[0] ?? null;
     }
 
+    /**
+     * Refund a completed payment. Only payments with status `completed` can be refunded.
+     *
+     * @param {string} paymentId
+     * @returns {Promise<Object>} The updated payment object with status `refunded`.
+     */
+    async refundPayment(paymentId) {
+        return this.#request('POST', `/api/v1/payments/${encodeURIComponent(paymentId)}/refund`);
+    }
+
     // -------------------------------------------------------------------------
     // Customers
     // -------------------------------------------------------------------------
@@ -114,8 +124,8 @@ class FastaarClient {
 
         if (!response.ok || payload === null) {
             throw new FastaarError(
-                payload?.error?.message ?? `Fastaar API returned HTTP ${response.status}.`,
-                payload?.error?.type ?? 'api_error',
+                payload?.message ?? `Fastaar API returned HTTP ${response.status}.`,
+                payload?.code ?? 'api_error',
                 response.status,
             );
         }
