@@ -21,7 +21,7 @@ const fastaar = new FastaarClient(process.env.FASTAAR_API_KEY);
 app.post('/pay', async (req, res) => {
     const payment = await fastaar.createPayment({
         amount: 1250,
-        invoice_id: 'ORDER-42',                          // your order reference
+        invoice_number: 'ORDER-42',                          // required — your order reference
         success_url: 'https://shop.example.com/thanks',  // optional, customer returns here
         cancel_url: 'https://shop.example.com/cart',     // optional
     });
@@ -30,8 +30,8 @@ app.post('/pay', async (req, res) => {
 });
 ```
 
-Passing the same `invoice_id` again returns the existing payment instead of
-creating a duplicate, so a retried request never double-charges.
+`invoice_number` is idempotent: retrying with the same value returns the existing payment
+instead of creating a duplicate, so a dropped connection never double-charges.
 
 ## Confirm the order from a webhook
 
@@ -51,7 +51,7 @@ app.post('/webhooks/fastaar', express.raw({ type: 'application/json' }), (req, r
     const event = JSON.parse(req.body);
 
     if (event.event === 'payment.completed') {
-        const orderId = event.data.invoice_id;
+        const orderId = event.data.invoice_number;
         // mark the order as paid, idempotently (use event.data.id as the key)
     }
 
@@ -59,12 +59,32 @@ app.post('/webhooks/fastaar', express.raw({ type: 'application/json' }), (req, r
 });
 ```
 
-## Other calls
+## Other payment calls
 
 ```js
 await fastaar.getPayment('01jxyz...');
-await fastaar.findByInvoiceId('ORDER-42');      // look up by your reference
+await fastaar.findByInvoiceNumber('ORDER-42');       // look up by your reference
 await fastaar.listPayments({ status: 'completed' });
+```
+
+## Customers
+
+Store customer records to attach them to payments collected via payment links.
+
+```js
+// Create a customer — name and phone are required
+const customer = await fastaar.createCustomer({
+    name:    'Rahim Uddin',
+    phone:   '01712345678',
+    email:   'rahim@example.com',   // optional
+    address: 'Dhaka, Bangladesh',   // optional
+    notes:   'VIP customer',        // optional
+});
+
+// Retrieve, update, list
+const fetched   = await fastaar.getCustomer(customer.id);
+const updated   = await fastaar.updateCustomer(customer.id, { name: 'Rahim Ahmed' });
+const customers = await fastaar.listCustomers({ email: 'rahim@example.com' });
 ```
 
 Errors throw `FastaarError` with `errorType` (e.g. `authentication_error`,
