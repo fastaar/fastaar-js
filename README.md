@@ -4,6 +4,8 @@ Accept bKash & Nagad payments from any Node.js (≥18) backend via [Fastaar](htt
 Zero dependencies — uses the global `fetch` and `node:crypto`. Ships as an ES module (`import`).
 
 > API keys are secret. Use this SDK on your **server only**, never in the browser.
+> Each key is scoped to abilities (e.g. `payments:write`, `payments:refund`) and can have an
+> expiry — calls beyond a key's abilities or past its expiry return `403 ability_denied` / `401 authentication_error`.
 
 ## Install
 
