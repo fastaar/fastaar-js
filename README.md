@@ -24,6 +24,7 @@ app.post('/pay', async (req, res) => {
     const payment = await fastaar.createPayment({
         amount: 1250,
         invoice_number: 'ORDER-42',                      // required — your order reference
+        customer_id: customer?.id,                       // optional — attach an existing customer
         success_url: 'https://shop.example.com/thanks',  // optional, customer returns here
         cancel_url: 'https://shop.example.com/cart',     // optional
     });
@@ -32,8 +33,11 @@ app.post('/pay', async (req, res) => {
 });
 ```
 
-`invoice_number` is idempotent: retrying with the same value returns the existing payment
-instead of creating a duplicate, so a dropped connection never double-charges.
+`invoice_number` is idempotent: if a payment already exists for it and hasn't reached `failed`
+or `expired`, creating another one throws a `FastaarError` with `errorType`
+`duplicate_invoice_number` (HTTP 409) instead of creating a duplicate — so a dropped connection
+never double-charges. Use `findByInvoiceNumber()` to look the existing payment up rather than
+retrying blindly.
 
 ## Confirm the order from a webhook
 
@@ -67,7 +71,9 @@ app.post('/webhooks/fastaar', express.raw({ type: 'application/json' }), (req, r
 await fastaar.getPayment('01jxyz...');
 await fastaar.findByInvoiceNumber('ORDER-42');       // look up by your reference
 await fastaar.listPayments({ status: 'completed' });
-await fastaar.refundPayment('01jxyz...');            // refund a completed payment
+await fastaar.refundPayment('01jxyz...');            // refund the full remaining balance
+await fastaar.refundPayment('01jxyz...', 200);       // or refund only part of it
+await fastaar.listRefunds('01jxyz...');              // full refund history, newest first
 ```
 
 ## Customers

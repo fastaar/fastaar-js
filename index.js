@@ -29,11 +29,13 @@ class FastaarClient {
      * Create a payment intent. Returns the payment object including
      * `id`, `status`, and `checkout_url`.
      *
-     * Reusing the same `invoice_number` returns the existing payment instead of
-     * creating a duplicate, so retries are safe. Supply `success_url`/`cancel_url`
-     * to return the customer to your site after checkout.
+     * Reusing the same `invoice_number` while a previous payment for it is still
+     * active (not `failed`/`expired`) throws a FastaarError with errorType
+     * `duplicate_invoice_number` (HTTP 409) instead of creating a duplicate — look
+     * the existing payment up with `findByInvoiceNumber()` rather than retrying blindly.
+     * Supply `success_url`/`cancel_url` to return the customer to your site after checkout.
      *
-     * @param {{amount: number|string, invoice_number: string, success_url?: string, cancel_url?: string, metadata?: Object<string, string>}} params
+     * @param {{amount: number|string, invoice_number: string, customer_id?: number, success_url?: string, cancel_url?: string, metadata?: Object<string, string>}} params
      */
     async createPayment(params) {
         return this.#request('POST', '/api/v1/payments', params);
@@ -59,13 +61,27 @@ class FastaarClient {
     }
 
     /**
-     * Refund a completed payment. Only payments with status `completed` can be refunded.
+     * Refund a payment, in full or in part. Only payments with status `completed` or
+     * `partially_refunded` can be refunded. Pass an amount to refund only part of the
+     * remaining balance; omit it to refund whatever is still refundable.
      *
      * @param {string} paymentId
-     * @returns {Promise<Object>} The updated payment object with status `refunded`.
+     * @param {number|string} [amount]
+     * @returns {Promise<Object>} The updated payment object. `status` is `refunded` once
+     *   fully refunded, or `partially_refunded` if some balance remains.
      */
-    async refundPayment(paymentId) {
-        return this.#request('POST', `/api/v1/payments/${encodeURIComponent(paymentId)}/refund`);
+    async refundPayment(paymentId, amount) {
+        return this.#request('POST', `/api/v1/payments/${encodeURIComponent(paymentId)}/refund`, amount !== undefined ? { amount } : undefined);
+    }
+
+    /**
+     * List a payment's refund history, newest first — one entry per refund call, even
+     * across several partial refunds.
+     *
+     * @param {string} paymentId
+     */
+    async listRefunds(paymentId) {
+        return this.#request('GET', `/api/v1/payments/${encodeURIComponent(paymentId)}/refunds`);
     }
 
     // -------------------------------------------------------------------------
