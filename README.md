@@ -1,5 +1,9 @@
 # Fastaar Node.js SDK
 
+[![CI](https://github.com/fastaar/fastaar-js/actions/workflows/ci.yml/badge.svg)](https://github.com/fastaar/fastaar-js/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/%40fastaar%2Fnode.svg)](https://www.npmjs.com/package/@fastaar/node)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Accept bKash & Nagad payments from any Node.js (≥18) backend via [Fastaar](https://fastaar.com).
 Zero dependencies — uses the global `fetch` and `node:crypto`. Ships as an ES module (`import`).
 
