@@ -1,7 +1,7 @@
 {
     "name": "@fastaar/node",
     "version": "0.1.6",
-    "description": "Node.js SDK for the Fastaar payment gateway — accept bKash & Nagad payments in Bangladesh.",
+    "description": "Node.js SDK for the Fastaar payment verification service — accept bKash & Nagad payments in Bangladesh.",
     "license": "MIT",
     "repository": {
         "type": "git",
